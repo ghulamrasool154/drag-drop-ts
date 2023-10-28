@@ -1,4 +1,5 @@
-interface Validatble {
+// Validation
+interface Validatable {
   value: string | number;
   required?: boolean;
   minLength?: number;
@@ -6,7 +7,8 @@ interface Validatble {
   min?: number;
   max?: number;
 }
-function validate(validatableInput: Validatble) {
+
+function validate(validatableInput: Validatable) {
   let isValid = true;
   if (validatableInput.required) {
     isValid = isValid && validatableInput.value.toString().trim().length !== 0;
@@ -16,14 +18,32 @@ function validate(validatableInput: Validatble) {
     typeof validatableInput.value === "string"
   ) {
     isValid =
-      isValid && validatableInput.value.length > validatableInput.minLength;
+      isValid && validatableInput.value.length >= validatableInput.minLength;
+  }
+  if (
+    validatableInput.maxLength != null &&
+    typeof validatableInput.value === "string"
+  ) {
+    isValid =
+      isValid && validatableInput.value.length <= validatableInput.maxLength;
+  }
+  if (
+    validatableInput.min != null &&
+    typeof validatableInput.value === "number"
+  ) {
+    isValid = isValid && validatableInput.value >= validatableInput.min;
+  }
+  if (
+    validatableInput.max != null &&
+    typeof validatableInput.value === "number"
+  ) {
+    isValid = isValid && validatableInput.value <= validatableInput.max;
   }
   return isValid;
 }
 
-/////// AUTO BIND DECORATORE
-
-function autobind(_1: any, _2: string, descriptor: PropertyDescriptor) {
+// autobind decorator
+function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
   const adjDescriptor: PropertyDescriptor = {
     configurable: true,
@@ -35,20 +55,20 @@ function autobind(_1: any, _2: string, descriptor: PropertyDescriptor) {
   return adjDescriptor;
 }
 
-////// PROJECT INPUT CLASS
+// ProjectInput Class
 class ProjectInput {
   templateElement: HTMLTemplateElement;
   hostElement: HTMLDivElement;
   element: HTMLFormElement;
-  tilteInputElement: HTMLInputElement;
+  titleInputElement: HTMLInputElement;
   descriptionInputElement: HTMLInputElement;
   peopleInputElement: HTMLInputElement;
 
   constructor() {
     this.templateElement = document.getElementById(
       "project-input"
-    ) as HTMLTemplateElement;
-    this.hostElement = document.getElementById("app") as HTMLDivElement;
+    )! as HTMLTemplateElement;
+    this.hostElement = document.getElementById("app")! as HTMLDivElement;
 
     const importedNode = document.importNode(
       this.templateElement.content,
@@ -57,7 +77,7 @@ class ProjectInput {
     this.element = importedNode.firstElementChild as HTMLFormElement;
     this.element.id = "user-input";
 
-    this.tilteInputElement = this.element.querySelector(
+    this.titleInputElement = this.element.querySelector(
       "#title"
     ) as HTMLInputElement;
     this.descriptionInputElement = this.element.querySelector(
@@ -66,48 +86,65 @@ class ProjectInput {
     this.peopleInputElement = this.element.querySelector(
       "#people"
     ) as HTMLInputElement;
-    this.attach();
+
     this.configure();
+    this.attach();
   }
 
-  private gaterUserInput(): [string, string, number] | void {
-    const enteredTitle = this.tilteInputElement.value;
+  private gatherUserInput(): [string, string, number] | void {
+    const enteredTitle = this.titleInputElement.value;
     const enteredDescription = this.descriptionInputElement.value;
     const enteredPeople = this.peopleInputElement.value;
 
+    const titleValidatable: Validatable = {
+      value: enteredTitle,
+      required: true,
+    };
+    const descriptionValidatable: Validatable = {
+      value: enteredDescription,
+      required: true,
+      minLength: 5,
+    };
+    const peopleValidatable: Validatable = {
+      value: +enteredPeople,
+      required: true,
+      min: 1,
+      max: 5,
+    };
+
     if (
-      validate({ value: enteredTitle, required: true, minLength: 5 }) &&
-      validate({ value: enteredDescription, required: true, minLength: 5 }) &&
-      validate({ value: enteredPeople, required: true, minLength: 5 })
+      !validate(titleValidatable) ||
+      !validate(descriptionValidatable) ||
+      !validate(peopleValidatable)
     ) {
-      alert("invalid input, please try again");
+      alert("Invalid input, please try again!");
       return;
     } else {
       return [enteredTitle, enteredDescription, +enteredPeople];
     }
   }
 
-  private clearInput() {
-    this.tilteInputElement.value = "";
+  private clearInputs() {
+    this.titleInputElement.value = "";
     this.descriptionInputElement.value = "";
     this.peopleInputElement.value = "";
   }
 
   @autobind
-  private submitHanlder(event: Event) {
+  private submitHandler(event: Event) {
     event.preventDefault();
-
-    const userInput = this.gaterUserInput();
-
+    const userInput = this.gatherUserInput();
     if (Array.isArray(userInput)) {
       const [title, desc, people] = userInput;
       console.log(title, desc, people);
-      this.clearInput();
+      this.clearInputs();
     }
   }
+
   private configure() {
-    this.element.addEventListener("submit", this.submitHanlder);
+    this.element.addEventListener("submit", this.submitHandler);
   }
+
   private attach() {
     this.hostElement.insertAdjacentElement("afterbegin", this.element);
   }
