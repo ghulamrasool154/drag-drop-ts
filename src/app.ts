@@ -18,6 +18,7 @@ class ProjectInput {
     );
     this.element = importedNode.firstElementChild as HTMLFormElement;
     this.element.id = "user-input";
+
     this.tilteInputElement = this.element.querySelector(
       "#title"
     ) as HTMLInputElement;
@@ -28,6 +29,15 @@ class ProjectInput {
       "#people"
     ) as HTMLInputElement;
     this.attach();
+    this.configure();
+  }
+
+  private submitHanlder(event: Event) {
+    event.preventDefault();
+    console.log("event", this.tilteInputElement.value);
+  }
+  private configure() {
+    this.element.addEventListener("submit", this.submitHanlder.bind(this));
   }
   private attach() {
     this.hostElement.insertAdjacentElement("afterbegin", this.element);
