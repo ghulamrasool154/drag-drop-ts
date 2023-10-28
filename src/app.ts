@@ -47,7 +47,7 @@ class ProjectInput {
     this.configure();
   }
 
-  private gaterUserInput(): [string, string, number] | undefined {
+  private gaterUserInput(): [string, string, number] | void {
     const enteredTitle = this.tilteInputElement.value;
     const enteredDescription = this.descriptionInputElement.value;
     const enteredPeople = this.peopleInputElement.value;
@@ -66,8 +66,12 @@ class ProjectInput {
   @autobind
   private submitHanlder(event: Event) {
     event.preventDefault();
-    console.log("event", this.tilteInputElement.value);
+
     const userInput = this.gaterUserInput();
+
+    if (Array.isArray(userInput)) {
+      const [title, desc, peopl] = userInput;
+    }
   }
   private configure() {
     this.element.addEventListener("submit", this.submitHanlder);
