@@ -1,3 +1,11 @@
+/// drag & drop interfaces
+
+interface Draggable {
+  dragStartHanlder(event: DragEvent): void;
+  dragEndHanlder(event: DragEvent): void;
+}
+interface DraggTarget {}
+
 //// project type
 
 enum ProjectStatus {
